@@ -5,5 +5,5 @@ import { LoglogStack } from '../lib/loglog-stack';
 import { VpcStack } from '../lib/vpc-stack';
 
 const app = new cdk.App();
-new VpcStack(app, 'VPCStack');
-new LoglogStack(app, 'LoglogStack');
+const vpcstack = new VpcStack(app, 'VPCStack');
+new LoglogStack(app, 'LoglogStack', { vpc: vpcstack.vpc });
