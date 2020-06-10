@@ -14,22 +14,12 @@ export class LoglogStack extends cdk.Stack {
 	constructor(scope: cdk.Construct, id: string, props: LogLogStackProps) {
 		super(scope, id, props);
 		const vpc = props.vpc;
-		const logasg = new autoscaling.AutoScalingGroup(this, 'fooAsg', {
+		const logasg = new autoscaling.AutoScalingGroup(this, 'fooasg', {
 			vpc,
 			instanceType: ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.MICRO),
 			machineImage: new ec2.AmazonLinuxImage({ generation: ec2.AmazonLinuxGeneration.AMAZON_LINUX_2 }), // get the latest Amazon Linux image,
-			desiredCapacity: 2,
-			updateType: UpdateType.REPLACING_UPDATE,
-			rollingUpdateConfiguration: {
-				minInstancesInService: 2,
-				maxBatchSize: 1,
-				waitOnResourceSignals: true,
-				pauseTime: Duration.minutes(2)
-			},
-			resourceSignalCount: 2
+			desiredCapacity: 3
 		});
-
-		logasg.userData.addSignalOnExitCommand(logasg);
 		const asgResource = logasg.node.defaultChild as autoscaling.CfnAutoScalingGroup;
 
 		logasg.addUserData('#!/bin/bash', 'rpm -Uvh https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm',
@@ -42,6 +32,16 @@ export class LoglogStack extends cdk.Stack {
 		//Borrowed from here: https://raw.githubusercontent.com/awslabs/aws-cloudformation-templates/master/aws/solutions/AmazonCloudWatchAgent/inline/amazon_linux.template
 		//A bit sad in terms of the json file, but will fix in later versions
 		const cfn_loglog = logasg.node.defaultChild as ec2.CfnInstance;
+		cfn_loglog.cfnOptions.creationPolicy =
+		{
+			autoScalingCreationPolicy:
+			{
+				minSuccessfulInstancesPercent: 100
+			},
+			resourceSignal: {
+				count: 2, timeout: "PT5M"
+			}
+		};
 		cfn_loglog.cfnOptions.metadata = {
 			"AWS::CloudFormation::Init": {
 				"configSets": {
@@ -59,7 +59,7 @@ export class LoglogStack extends cdk.Stack {
 					"files": {
 						"/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json": {
 							"content": {
-								"Fn::Sub": "{\"logs\": {\"logs_collected\": {\"files\": {\"collect_list\": [\"file_path\": \"\/var\/log\/messages\",\"log_group_name\": \"\/ec2\/instance-logs\",\"log_stream_name\": \"{instance_id}-messages\"},\"file_path\": \"\/var\/log\/secure\",\"log_group_name\": \"\/ec2\/instance-logs\",\"log_stream_name\": \"{instance_id}-secure\"}]}}"
+								"Fn::Sub": "{\r\n \t\"agent\": {\r\n \t\t\"logfile\": \"\/opt\/aws\/amazon-cloudwatch-agent\/logs\/amazon-cloudwatch-agent.log\"\r\n \t},\r\n \t\"logs\": {\r\n \t\t\"logs_collected\": {\r\n \t\t\t\"files\": {\r\n \t\t\t\t\"collect_list\": [{\r\n \t\t\t\t\t\t\"file_path\": \"\/var\/log\/messages\",\r\n \t\t\t\t\t\t\"log_group_name\": \"\/ec2\/instance-logs\",\r\n \t\t\t\t\t\t\"log_stream_name\": \"{instance_id}-messages\",\r\n \t\t\t\t\t\t\"timezone\": \"UTC\"\r\n \t\t\t\t\t},\r\n \t\t\t\t\t{\r\n \t\t\t\t\t\t\"file_path\": \"\/var\/log\/secure\",\r\n \t\t\t\t\t\t\"log_group_name\": \"\/ec2\/instance-logs\",\r\n \t\t\t\t\t\t\"log_stream_name\": \"{instance_id}-secure\",\r\n \t\t\t\t\t\t\"timezone\": \"UTC\"\r\n \t\t\t\t\t}\r\n \t\t\t\t]\r\n \t\t\t}\r\n \t\t}\r\n \t}\r\n }"
 							}
 						}
 					}
