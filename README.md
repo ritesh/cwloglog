@@ -1,6 +1,5 @@
-# Implements a test stack that creates EC2 to log rubbish data
+# Implements a stack that creates EC2 to log data
 
-This directory has a weird layout to work with nix-env
+This directory has a weird layout to work with [nix-env](https://nixos.org/nix/manual/)
 
-the outer package.json is to install cdk etc (not globally, within node_modules/.bin). The inner loglog directory has teh actual cdk code
 
