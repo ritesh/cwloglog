@@ -48,7 +48,7 @@ export class LoglogStack extends cdk.Stack {
 		//TODO refactor this into a filters and metrics stack that takes
 		//A log group as a parameter
 		//and generates filters on this
-		const add_user_filter = new logs.MetricFilter(this, 'AddedUsersEc2', {
+		new logs.MetricFilter(this, 'AddedUsersEc2', {
 			logGroup: logGroup,
 			filterPattern: logs.FilterPattern.anyTerm('useradd', 'useradd', 'addgroup'),
 			metricName: add_user_metric.metricName,
@@ -56,7 +56,7 @@ export class LoglogStack extends cdk.Stack {
 			metricValue: "1"
 		});
 
-		const user_added_alarm = new cloudwatch.Alarm(this, "UserAddedAlarm", {
+		new cloudwatch.Alarm(this, "UserAddedAlarm", {
 			evaluationPeriods: 1,
 			statistic: "sum",
 			metric: add_user_metric,
