@@ -22,7 +22,7 @@ export class LoglogStack extends cdk.Stack {
 			desiredCapacity: 3
 		});
 		const asgResource = logasg.node.defaultChild as autoscaling.CfnAutoScalingGroup;
-		logasg.addUserData('#!/bin/bash', 'yum -y upgrade', 'rpm -Uvh https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm',
+		logasg.addUserData('#!/bin/bash', 'yum -y upgrade', `rpm -Uvh https://s3.${cdk.Aws.REGION}.amazonaws.com/amazoncloudwatch-agent-${cdk.Aws.REGION}/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm`,
 			`/opt/aws/bin/cfn-init -v --stack ${cdk.Aws.STACK_NAME} --resource ${asgResource.logicalId} --region ${cdk.Aws.REGION} --configsets default`,
 			`/opt/aws/bin/cfn-signal -e $? --stack ${cdk.Aws.STACK_NAME} --resource ${asgResource.logicalId} --region ${cdk.Aws.REGION}`);
 		//required for cwl 
