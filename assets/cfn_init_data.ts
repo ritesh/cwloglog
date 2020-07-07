@@ -3,6 +3,8 @@ const cloudwatch_agent_config = {
         "logfile": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log"
     },
     "logs": {
+        //TODO fix this hardcoded URL!
+        "endpoint_override": "logs.us-east-2.amazonaws.com",
         "logs_collected": {
             "files": {
                 "collect_list": [{
@@ -51,9 +53,7 @@ export let cfn_metadata = {
         "02_config-amazon-cloudwatch-agent": {
             "files": {
                 "/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json": {
-                    "content": {
-                        "Fn::Sub": JSON.stringify(cloudwatch_agent_config)
-                    }
+                    "content": JSON.stringify(cloudwatch_agent_config)
                 }
             }
         },

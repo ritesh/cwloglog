@@ -53,6 +53,13 @@ export class VpcStack extends cdk.Stack {
             vpc,
             service: ec2.InterfaceVpcEndpointAwsService.EC2_MESSAGES
         });
+
+        //Doing this since we need a ref to the DNS name for cwllogs
+        new ec2.InterfaceVpcEndpoint(this, 'cwllogs', {
+            vpc,
+            service: ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_LOGS
+        });
+
         //TODO add policy
         new ec2.GatewayVpcEndpoint(this, 's3', {
             vpc,

@@ -25,7 +25,7 @@ export class LoglogStack extends cdk.Stack {
 		logasg.addUserData('#!/bin/bash', 'yum -y upgrade', `rpm -Uvh https://s3.${cdk.Aws.REGION}.amazonaws.com/amazoncloudwatch-agent-${cdk.Aws.REGION}/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm`,
 			`/opt/aws/bin/cfn-init -v --stack ${cdk.Aws.STACK_NAME} --resource ${asgResource.logicalId} --region ${cdk.Aws.REGION} --configsets default`,
 			`/opt/aws/bin/cfn-signal -e $? --stack ${cdk.Aws.STACK_NAME} --resource ${asgResource.logicalId} --region ${cdk.Aws.REGION}`);
-		//required for cwl 
+		//required for cwl  TODO: make it restrictive!!
 		logasg.role.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('CloudWatchAgentServerPolicy'));
 		//Required for SSM to be able to connect
 		logasg.role.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'));
@@ -34,6 +34,7 @@ export class LoglogStack extends cdk.Stack {
 		//The metadata itself is in ../assets/cfn_init_data.ts to keep this file tidy
 		const cfn_loglog = logasg.node.defaultChild as ec2.CfnInstance;
 		cfn_loglog.cfnOptions.creationPolicy = asg_creation_policy;
+		//TODO: fix this hardcoded region
 		cfn_loglog.cfnOptions.metadata = cfn_metadata;
 		const logGroup = new logs.LogGroup(this, '/ec2/instance-logs/', {
 			retention: logs.RetentionDays.ONE_DAY,
